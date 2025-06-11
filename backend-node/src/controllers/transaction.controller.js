@@ -6,19 +6,34 @@ import axios from "axios";
 
 export const createTransaction = asyncHandler(async (req, res) => {
     const {
-        senderAccountNumber,
         receiverAccountNumber,
         amount,
         type,
         location,
         deviceId
     } = req.body;
-    
+    const senderAccountNumber = req.user.accountNumber;
     // Validate required fields
     if (!senderAccountNumber || !receiverAccountNumber || !amount || !type || !location || !deviceId) {
         throw new ApiError(400, "Required fields missing");
     }
-    
+    if( type !== 'Credit' && type !== 'Debit') {
+        throw new ApiError(400, "Invalid transaction type. Must be 'Credit' or 'Debit'.");
+    }
+    if (amount <= 0) {
+        throw new ApiError(400, "Amount must be greater than zero");
+    }
+    const senderAccount = req.user;
+    const receiverAccount = await Transaction.findOne({ receiverAccountNumber });
+    if (!senderAccount) {
+        throw new ApiError(404, "Sender account not found");
+    }
+    if (!receiverAccount) {
+        throw new ApiError(404, "Receiver account not found");
+    }
+    if(senderAccount.blocked || receiverAccount.blocked) {
+        throw new ApiError(403, "Transaction not allowed for blocked accounts");
+    }
     // Create transaction
     const currentTransaction = {
         senderAccountNumber,
@@ -31,7 +46,7 @@ export const createTransaction = asyncHandler(async (req, res) => {
 
     const fraudPercentage = axios.get("Link" , {
         currentTransaction,
-        userId: req.user._id
+        user: req.user
     })
 
     const transaction = await Transaction.create({
@@ -47,3 +62,5 @@ export const createTransaction = asyncHandler(async (req, res) => {
     // Send response
     res.status(201).json(new ApiResponse("Transaction created successfully", transaction));
 })
+
+
