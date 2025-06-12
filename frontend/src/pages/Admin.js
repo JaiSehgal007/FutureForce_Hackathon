@@ -313,7 +313,7 @@ const Admin = () => {
                   </div>
                   <p className="admin-user-email">{user.email}</p>
                   <p className="admin-user-accountBalance">
-                    Balance: ${getUserBalance(user).toLocaleString()}
+                    Balance: ₹ {getUserBalance(user).toLocaleString()}
                   </p>
                 </div>
                 <div className="admin-user-actions">

@@ -89,11 +89,11 @@ const Fraud = () => {
         </div>
         <div className="stat-card">
           <h3>Total Amount Transacted</h3>
-          <p>${fraudStats.totalAmountTransacted.toFixed(2)}</p>
+          <p>₹{fraudStats.totalAmountTransacted.toFixed(2)}</p>
         </div>
         <div className="stat-card">
           <h3>Average Amount Transacted</h3>
-          <p>${fraudStats.averageAmountTransacted.toFixed(2)}</p>
+          <p>₹{fraudStats.averageAmountTransacted.toFixed(2)}</p>
         </div>
         <div className="stat-card">
           <h3>Suspicious Accounts</h3>
