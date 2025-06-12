@@ -2,19 +2,22 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // import { FaUser, FaIdCard, FaUserShield } from 'react-icons/fa';
 import './Login.css';
-
+import api from '../services/api.js'; // Adjust the import based on your project structure
 const Login = () => {
   const [loginType, setLoginType] = useState('user');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [employeeId, setEmployeeId] = useState('');
-  const [adminName, setAdminName] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     // Here you would typically make an API call to verify credentials
     // For demo purposes, we'll just navigate based on login type
+    const res = await api.post('/user/login' , {
+      accountNumber : username,
+      pin : password,
+      userType : loginType.toLowerCase()
+    })
     switch(loginType) {
       case 'user':
         navigate('/home');
@@ -55,10 +58,10 @@ const Login = () => {
           </button>
         </div>
         <form onSubmit={handleSubmit}>
-          {loginType === 'user' && (
+          {(
             <>
               <div className="form-group">
-                <label>Username</label>
+                <label>Account Number</label>
                 <input
                   type="text"
                   value={username}
@@ -67,51 +70,7 @@ const Login = () => {
                 />
               </div>
               <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          )}
-          {loginType === 'employee' && (
-            <>
-              <div className="form-group">
-                <label>Employee ID</label>
-                <input
-                  type="text"
-                  value={employeeId}
-                  onChange={(e) => setEmployeeId(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          )}
-          {loginType === 'admin' && (
-            <>
-              <div className="form-group">
-                <label>Admin Name</label>
-                <input
-                  type="text"
-                  value={adminName}
-                  onChange={(e) => setAdminName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Password</label>
+                <label>PIN</label>
                 <input
                   type="password"
                   value={password}

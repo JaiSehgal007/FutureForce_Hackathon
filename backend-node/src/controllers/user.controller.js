@@ -138,26 +138,39 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 })
 
 
-export const addSavedContact = asyncHandler(async (req , res) => {
+export const addSavedContact = asyncHandler(async (req, res) => {
     const { contactName, contactNumber } = req.body;
+
     if (!contactName || !contactNumber) {
         throw new ApiError(400, "Contact name and number are required");
     }
 
-    const user = await User.findOne({contact : contactNumber});
-    if (!user) {
-        throw new ApiError(404, "User not found");
+    // Step 1: Ensure the contact being added is a valid user
+    const contactUser = await User.findOne({ contact: contactNumber });
+    if (!contactUser) {
+        throw new ApiError(404, "No user found with this contact number");
     }
 
-    // Check if contact already exists
-    const existingContact = user.savedContacts.find(contact => contact.contact === contactNumber);
-    if (existingContact) {
-        throw new ApiError(400, "Contact already exists");
+    // Step 2: Get the current logged-in user
+    const currentUser = await User.findById(req.user._id);
+
+    if (!currentUser) {
+        throw new ApiError(404, "Current user not found");
     }
 
-    // Add new contact
-    user.savedContacts.push({ name : contactName,contact : contactNumber });
-    await user.save();
-    
-    res.status(201).json(new ApiResponse(201, { savedContacts: user.savedContacts }, "Contact added successfully"));
-})
+    // Step 3: Check if contact already exists in current user's savedContacts
+    const alreadyExists = currentUser.savedContacts.some(
+        contact => contact.contact === contactNumber
+    );
+    if (alreadyExists) {
+        throw new ApiError(400, "Contact already exists in your saved list");
+    }
+
+    // Step 4: Add new contact to savedContacts of the current user
+    currentUser.savedContacts.push({ name: contactName, contact: contactNumber });
+    await currentUser.save();
+
+    res.status(201).json(
+        new ApiResponse(201, { savedContacts: currentUser.savedContacts }, "Contact added successfully")
+    );
+});
