@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-
+import bcrypt from 'bcrypt';
+import jwt from "jsonwebtoken"
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -13,7 +14,7 @@ const userSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ['Male', 'Female', 'Other'],
+    enum: ['Male', 'Female'],
     required: true
   },
   occupation: {
@@ -22,7 +23,7 @@ const userSchema = new mongoose.Schema({
     trim: true
   },
   pin: {
-    type: Number,
+    type: String,
     required: true
   },
   blocked: {

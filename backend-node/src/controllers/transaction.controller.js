@@ -17,14 +17,15 @@ export const createTransaction = asyncHandler(async (req, res) => {
     const {
         receiverAccountNumber,
         amount,
-        type,
+        type = 'Debit',
         location,
-        deviceId
+        deviceId,
+        pin
     } = req.body;
-
+    
     const senderAccountNumber = req.user.accountNumber;
 
-    if (!senderAccountNumber || !receiverAccountNumber || !amount || !type || !location || !deviceId) {
+    if (!senderAccountNumber || !receiverAccountNumber || !amount || !type || !location || !deviceId || !pin) {
         throw new ApiError(400, "Required fields missing");
     }
 
@@ -32,43 +33,58 @@ export const createTransaction = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid transaction type. Must be 'Credit' or 'Debit'.");
     }
 
-    if (amount <= 0) {
-        throw new ApiError(400, "Amount must be greater than zero");
-    }
-
     const senderAccount = await User.findOne({ accountNumber: senderAccountNumber });
     const receiverAccount = await User.findOne({ accountNumber: receiverAccountNumber });
-
+    // console.log(receiverAccount)
     if (!senderAccount) throw new ApiError(404, "Sender account not found");
     if (!receiverAccount) throw new ApiError(404, "Receiver account not found");
+
     if (senderAccount.blocked || receiverAccount.blocked) {
         throw new ApiError(403, "Transaction not allowed for blocked accounts");
     }
 
+    if (!await senderAccount.isPasswordCorrect(pin)) {
+        throw new ApiError(403, "Incorrect PIN");
+    }
+
+    // ✅ Store original balances before changing them
+    const oldBalanceOrig = senderAccount.accountBalance;
+    const oldBalanceDest = receiverAccount.accountBalance;
+
+    if (type === 'Debit' && amount > oldBalanceOrig) {
+        throw new ApiError(400, "Insufficient balance for debit transaction");
+    }
+
+    const newBalanceOrig = Number(oldBalanceOrig) - Number(amount);
+    const newBalanceDest = Number(oldBalanceDest) + Number(amount);
+    console.log("newBalanceOrig:", newBalanceOrig, "newBalanceDest:", newBalanceDest);
+    
+    // ✅ Save updated balances
+    senderAccount.accountBalance = Number(newBalanceOrig);
+    receiverAccount.accountBalance = Number(newBalanceDest);
+    await senderAccount.save();
+    await receiverAccount.save();
+
     const now = new Date();
     const hour = now.getHours();
 
-    const previousTransaction = await Transaction.findOne({
+    const previousTransaction = await Transaction.find({
         senderAccountNumber
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }).limit(3);
 
-    const previousDate = previousTransaction ? previousTransaction.createdAt : now;
-    const timeGapMinutes = Math.floor(Math.abs(now - previousDate) / (1000 * 60)); // In minutes
+    const previousDate = previousTransaction[0] ? previousTransaction[0].createdAt : now;
+    const timeGapMinutes = Math.floor(Math.abs(now - previousDate) / (1000 * 60));
     const daysSinceLastTxn = Math.ceil(Math.abs(now - previousDate) / (1000 * 3600 * 24));
 
-    // Calculate XGBoost-related values
-    const oldBalanceOrig = senderAccount.accountBalance;
-    const newBalanceOrig = oldBalanceOrig - amount;
-    const oldBalanceDest = receiverAccount.accountBalance;
-    const newBalanceDest = oldBalanceDest + amount;
+    // ✅ Fraud detection input
     const errorBalanceOrig = oldBalanceOrig - newBalanceOrig - amount;
     const errorBalanceDest = newBalanceDest - oldBalanceDest - amount;
-
+    console.log("previousTransaction:", previousTransaction);
     const inputToML = {
         // Anomaly model inputs
-        TransactionAmount: amount,
+        TransactionAmount: Number(amount),
         TransactionType: type,
-        CustomerOccupation: senderAccount.occupation,
+        CustomerOccupation: senderAccount.occupation || "Unknown",
         AccountBalance: oldBalanceOrig,
         DayOfWeek: now.toLocaleString('en-US', { weekday: 'long' }),
         Hour: hour,
@@ -76,22 +92,23 @@ export const createTransaction = asyncHandler(async (req, res) => {
         Hour_of_Transaction: hour,
         AgeGroup: getAgeGroup(senderAccount.age),
         Days_Since_Last_Transaction: daysSinceLastTxn,
-        
+        location : location,
+        previousTransaction : previousTransaction,
         // XGBoost model inputs
-        amount: amount,
-        oldBalanceOrig: oldBalanceOrig,
-        newBalanceOrig: newBalanceOrig,
-        oldBalanceDest: oldBalanceDest,
-        newBalanceDest: newBalanceDest,
-        errorBalanceOrig: errorBalanceOrig,
-        errorBalanceDest: errorBalanceDest
+        amount : Number(amount),
+        oldBalanceOrig : Number(oldBalanceOrig),
+        newBalanceOrig : Number(newBalanceOrig),
+        oldBalanceDest : Number(oldBalanceDest),
+        newBalanceDest : Number(newBalanceDest),
+        errorBalanceOrig : Number(errorBalanceOrig),
+        errorBalanceDest : Number(errorBalanceDest)
     };
-
-
+    // console.log("previousTransaction:", previousTransaction);
+    console.log("Input to ML:", inputToML);
     let fraudPercentage = 0;
     try {
-        const { data } = await axios.post("http://127.0.0.1:8000/predict", inputToML);
-        fraudPercentage = data.risk_score ? parseFloat((data.risk_score * 100).toFixed(2)) : 0;
+        const { data } = await axios.post(`${process.env.PYTHON_API_URL}/predict`, inputToML);
+        fraudPercentage = data.risk_score ? data.risk_score : 0;
     } catch (error) {
         console.error("ML backend error:", error?.response?.data || error.message);
         fraudPercentage = 0;
@@ -107,5 +124,22 @@ export const createTransaction = asyncHandler(async (req, res) => {
         deviceId
     });
 
-    res.status(201).json(new ApiResponse("Transaction created successfully", transaction));
+    res.status(201).json(new ApiResponse(201, transaction, "Transaction created successfully"));
+});
+
+export const getTransactionHistory = asyncHandler(async (req, res) => {
+    const accountNumber = req.user.accountNumber;
+
+    if (!accountNumber) {
+        throw new ApiError(400, "Account number is required");
+    }
+
+    const transactions = await Transaction.find({
+        $or: [
+            { senderAccountNumber: accountNumber },
+            { receiverAccountNumber: accountNumber }
+        ]
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(new ApiResponse("Transaction history retrieved successfully", transactions));
 });

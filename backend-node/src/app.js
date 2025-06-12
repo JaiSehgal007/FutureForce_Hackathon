@@ -18,5 +18,15 @@ app.use("/test" , (req , res) => {
     })
 })
 
+import userRoutes from "./routes/user.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import employeeRoutes from "./routes/employee.routes.js";
+import transactionRoutes from "./routes/transactions.routes.js";
+
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/employee", employeeRoutes);
+app.use("/api/v1/transaction", transactionRoutes);
+
 
 export {app};

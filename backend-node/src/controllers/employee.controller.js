@@ -1,4 +1,3 @@
-import mongoose from mongoose
 import { User } from "../models/user.models.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
@@ -31,11 +30,10 @@ export const addMoneyToWallet = asyncHandler(async (req, res) => {
     if (!createdTransaction) {
         throw new ApiError(500, "Failed to create transaction");
     }
-    user.balance = (user.balance || 0) + amount;
+    user.accountBalance = (user.accountBalance || 0) + amount;
     await user.save();
     res.status(201).json(new ApiResponse(201, {
         transaction: createdTransaction,
         user: await User.findById(user._id).select("-pin -refreshToken")
     }, "Money added to wallet successfully"));
 })
-

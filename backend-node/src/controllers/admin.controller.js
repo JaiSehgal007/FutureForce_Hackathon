@@ -1,12 +1,12 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models/user.model.js";
-import { Transaction } from "../models/transaction.model.js";
+import { User } from "../models/user.models.js";
+import { Transaction } from "../models/transaction.models.js";
 import mongoose from "mongoose";
 
 export const getStatsByRegion = asyncHandler(async (req, res) => {
-    const { region } = req.query;
+    const { region } = req.body;
 
     if (!region) {
         throw new ApiError(400, "Region query parameter is required");
@@ -14,8 +14,8 @@ export const getStatsByRegion = asyncHandler(async (req, res) => {
 
     // Fetch users and transactions by region
     const users = await User.find({ region });
-    const transactions = await Transaction.find({ region });
-
+    const transactions = await Transaction.find({location : region });
+    console.log("Transactions in region:", transactions);
     const totalUsers = users.length;
     const totalTransactions = transactions.length;
     const totalAmountTransacted = transactions.reduce((sum, txn) => sum + txn.amount, 0);
@@ -186,3 +186,17 @@ export const registerEmployee = asyncHandler(async (req, res) => {
     }
     res.status(201).json(new ApiResponse(201, { employee }, "Employee registered successfully"));
 })
+
+export const ToggleBlockUser = asyncHandler(async (req, res) => {
+    const userId = req.params.id;
+    if( !userId ) {
+        throw new ApiError(400, "User ID is required");
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+    user.blocked = !user.blocked; 
+    await user.save();
+    res.status(200).json(new ApiResponse(200, { user }, "User blocked successfully"));
+}) 

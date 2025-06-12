@@ -2,7 +2,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.models.js";
-
 // Helper to generate access and refresh tokens
 const generateAccessAndRefreshToken = async (userId) => {
   const user = await User.findById(userId);
@@ -76,32 +75,50 @@ export const registerUser = asyncHandler(async (req, res) => {
   }, "User registered successfully"));
 });
 
-export const login = asyncHandler(async (req , res) => {
-    const { accountNumber, pin , userType} = req.body;
-    if (!accountNumber || !pin) {
-        throw new ApiError(400, "Account number and PIN are required");
-    }
-    const user = await User.findOne({ accountNumber , userType }).select("-pin -refreshToken");
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }   
+export const login = asyncHandler(async (req, res) => {
+  const { accountNumber, pin, userType } = req.body;
 
-    if( user.blocked ){
-        throw new ApiError(403, "User is blocked");
-    }
+  if (!accountNumber || !pin) {
+    throw new ApiError(400, "Account number and PIN are required");
+  }
 
+  // Include pin to verify it later
+  const user = await User.findOne({ accountNumber }).select("+pin +refreshToken");
 
-    if(!await user.method.isPasswordCorrect(pin)){
-        throw new ApiError(401, "Incorrect PIN");  
-    }
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-    const loggedInUser = await User.findById(user._id).select("-password");
+  if (user.blocked) {
+    throw new ApiError(403, "User is blocked");
+  }
 
-    const options = { httpOnly: true, secure: true };
-    res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, { user: loggedInUser, accessToken }, "Login successful"));
-})
+  // Validate PIN
+  const isPinValid = await user.isPasswordCorrect(pin);
+  if (!isPinValid) {
+    throw new ApiError(401, "Incorrect PIN");
+  }
+
+  // Generate tokens
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
+  // Return user data without sensitive fields
+  const loggedInUser = await User.findById(user._id).select("-pin -refreshToken");
+
+  const options = { httpOnly: true, secure: true };
+  res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, accessToken },
+        "Login successful"
+      )
+    );
+});
+
 
 export const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, { refreshToken: null });
@@ -110,19 +127,7 @@ export const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Logged out successfully"));
 });
 
-export const ToggleBlockUser = asyncHandler(async (req, res) => {
-    const userId = req.params.id;
-    if( !userId ) {
-        throw new ApiError(400, "User ID is required");
-    }
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }
-    user.blocked = !user.blocked; 
-    await user.save();
-    res.status(200).json(new ApiResponse(200, { user }, "User blocked successfully"));
-}) 
+
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id).select("-pin -refreshToken");
