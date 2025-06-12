@@ -64,13 +64,11 @@ export const getStatsByRegion = asyncHandler(async (req, res) => {
 });
 
 export const getStatsByUser = asyncHandler(async (req, res) => {
-    const userId = req.params.id;
-
-    if (!mongoose.isValidObjectId(userId)) {
-        throw new ApiError(400, "Invalid user ID");
+    const {userId} = req.body;
+    if(!userId){
+        throw new ApiError(400 , "Please enter valid userID");
     }
-
-    const user = await User.findById(userId);
+    const user = await User.findOne({accountNumber : userId});
     if (!user) {
         throw new ApiError(404, "User not found");
     }

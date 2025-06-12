@@ -6,7 +6,7 @@ const transactionSchema = new mongoose.Schema({
     required: true
   },
   receiverAccountNumber: {
-    type: String,
+    type: String, 
     required: true
   },
   amount: {
