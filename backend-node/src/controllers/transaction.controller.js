@@ -63,4 +63,6 @@ export const createTransaction = asyncHandler(async (req, res) => {
     res.status(201).json(new ApiResponse("Transaction created successfully", transaction));
 })
 
-
+export const rollbackTransaction = asyncHandler(async (req , res) => {
+    
+}) 

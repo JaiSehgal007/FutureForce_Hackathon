@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   },
   occupation: {
     type: String,
-    required: true,
+    // required: true,
     trim: true
   },
   pin: {
@@ -39,12 +39,12 @@ const userSchema = new mongoose.Schema({
   },
   region: {
     type: String,
-    required: true,
+    // required: true,
     trim: true
   },
   accountNumber: {
     type: String,
-    required: true,
+    // required: true,
     unique: true
   },
   email: {
