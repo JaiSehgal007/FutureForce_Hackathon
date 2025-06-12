@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api.js'; // Adjust as needed
+import { PayContactDialog, PayPhoneDialog, PayUpiDialog } from '../components/dialog.js';
 
 const paymentActions = [
   { icon: (<svg width="32" height="32" fill="none" stroke="#0176D3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 8h.01M16 8h.01M8 16h.01M16 16h.01"/></svg>), label: 'Scan any\nQR code' },
@@ -23,6 +24,9 @@ const Home = () => {
   const [search, setSearch] = useState('');
   const [showDialog, setShowDialog] = useState(false);
   const [newContact, setNewContact] = useState({ name: '', phone: '' });
+  const [payContactOpen, setPayContactOpen] = useState(false);
+  const [payUpiOpen, setPayUpiOpen] = useState(false);
+  const [payPhoneOpen, setPayPhoneOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -65,6 +69,8 @@ const Home = () => {
 
   if (loading) return <div className="loading">Loading user data...</div>;
 
+  
+
   return (
     <>
       <Navbar />
@@ -85,7 +91,7 @@ const Home = () => {
             <div className="contacts-heading">Contacts</div>
             <ul className="contacts-list">
               {filteredContacts.map((c, i) => (
-                <li className="contact-item" key={i}>
+                <li className="contact-item" key={i} onClick={() => setPayContactOpen(true)}>
                   <b>{c.name}</b> — {c.contact}
                 </li>
               ))}
@@ -99,19 +105,40 @@ const Home = () => {
           </div>
 
           <div className="center-card">
-            <div className="payment-actions-grid">
-              {paymentActions.map((action, i) => (
-                <div className="payment-action" key={i}>
+          <div className="payment-actions-grid">
+            {paymentActions.map((action, i) => {
+              let onClick = undefined;
+              // if (action.label.includes('contacts')) onClick = () => setPayContactOpen(true);
+              if (action.label.includes('UPI')) onClick = () => setPayUpiOpen(true);
+              if (action.label.includes('phone')) onClick = () => setPayPhoneOpen(true);
+              return (
+                <div className="payment-action" key={i} onClick={onClick}>
                   {action.icon}
                   <div className="payment-action-label">
-                    {action.label.split('\n').map((line, idx) => (
-                      <div key={idx}>{line}</div>
-                    ))}
+                    {action.label.split('\n').map((line, idx) => <div key={idx}>{line}</div>)}
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           </div>
+
+          {/* <PayContactDialog
+  open={payContactOpen}
+  onClose={() => setPayContactOpen(false)}
+  contacts={contacts}
+  onConfirm={() => setPayContactOpen(false)}
+/> */}
+<PayUpiDialog
+  open={payUpiOpen}
+  onClose={() => setPayUpiOpen(false)}
+  onConfirm={() => setPayUpiOpen(false)}
+/>
+<PayPhoneDialog
+  open={payPhoneOpen}
+  onClose={() => setPayPhoneOpen(false)}
+  onConfirm={() => setPayPhoneOpen(false)}
+/>
 
           <section className="past-transactions">
             <h3>Past Transactions</h3>

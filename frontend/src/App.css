@@ -540,3 +540,189 @@
   font-weight: 700;
   letter-spacing: 0.01em;
 }
+
+/* Overlay for dialog */
+.pay-dialog-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+/* Dialog box */
+.pay-dialog {
+  background: #fff;
+  border-radius: 18px;
+  padding: 36px 32px 28px 32px;
+  box-shadow: 0 8px 32px rgba(1, 118, 211, 0.18), 0 2px 8px rgba(0,0,0,0.10);
+  min-width: 340px;
+  max-width: 95vw;
+  width: 400px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Dialog title */
+.pay-dialog h4 {
+  margin-top: 0;
+  color: #0176D3;
+  margin-bottom: 18px;
+  font-size: 1.3rem;
+  text-align: left;
+  font-weight: 800;
+}
+
+/* Input fields */
+.pay-dialog-input {
+  width: 92%;
+  padding: 12px 16px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 18px;
+  background: #f7fafd;
+  transition: border 0.2s;
+}
+.pay-dialog-input:focus {
+  border: 1.5px solid #0176D3;
+  outline: none;
+  background: #fff;
+}
+
+/* Actions row */
+.pay-dialog-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* Buttons */
+.pay-dialog-btn {
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.pay-dialog-btn.cancel {
+  background: #e0e0e0;
+  color: #333;
+}
+.pay-dialog-btn.cancel:hover {
+  background: #bdbdbd;
+}
+.pay-dialog-btn.next,
+.pay-dialog-btn.confirm {
+  background: #0176D3;
+  color: #fff;
+}
+.pay-dialog-btn.next:disabled,
+.pay-dialog-btn.confirm:disabled {
+  background: #b3e0fc;
+  color: #fff;
+  cursor: not-allowed;
+}
+.pay-dialog-btn.next:hover,
+.pay-dialog-btn.confirm:hover {
+  background: #015a9c;
+}
+
+/* Contacts list (for Pay Contact) */
+.pay-dialog-contacts-list {
+  max-height: 180px;
+  overflow-y: auto;
+  background: #f5f8fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 18px;
+  padding: 6px 0;
+}
+.pay-dialog-contact-item {
+  padding: 10px 18px;
+  border-radius: 6px;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  font-size: 1rem;
+}
+.pay-dialog-contact-item.selected,
+.pay-dialog-contact-item:hover {
+  background: #e3f2fd;
+  color: #0176D3;
+}
+.pay-dialog-empty {
+  color: #aaa;
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* Confirmation styles */
+.pay-dialog-confirmed-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.pay-dialog-confirmed-icon span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0176D3;
+  color: #fff;
+  font-size: 2.2rem;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  box-shadow: 0 2px 12px rgba(1, 118, 211, 0.12);
+  border: 4px solid #b3e0fc;
+}
+.pay-dialog-confirmed-title {
+  text-align: center;
+  color: #0176D3;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  margin-top: 0;
+  letter-spacing: 0.01em;
+}
+.pay-dialog-confirmed-summary {
+  background: #e3f2fd;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  font-size: 1.05rem;
+  color: #015a9c;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(1, 118, 211, 0.08);
+}
+.pay-dialog-confirmed-message {
+  color: #0176D3;
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Step summary */
+.pay-dialog-summary {
+  background: #f5f8fa;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 1.01rem;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
