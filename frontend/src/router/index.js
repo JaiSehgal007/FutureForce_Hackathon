@@ -7,14 +7,12 @@ import Employee from '../pages/Employee';
 import Admin from '../pages/Admin';
 import Profile from '../pages/Profile';
 import Fraud from '../pages/fraud';
+import AdminTransactions from '../pages/AdminTransactions'
 
 const router = createBrowserRouter([
+  
   {
     path: '/',
-    element: <Landing />
-  },
-  {
-    path: '/login',
     element: <Login />
   },
   {
@@ -40,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: '/fraud',
     element: <Fraud />
+  },
+  {
+    path : '/admin/transactions',
+    element : <AdminTransactions />
   }
 ]);
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api.js';
 
 const Navbar = () => {
     const [activeIcon, setActiveIcon] = useState('');
@@ -32,11 +33,17 @@ const Navbar = () => {
     );
   };
 
-const Sidebar = ({ flaggedUsers, flaggedSearch, setFlaggedSearch }) => (
+const Sidebar = ({ flaggedUsers, flaggedSearch, setFlaggedSearch, onTransactionHistoryClick , onFraudClick }) => (
   <aside className="admin-sidebar">
     <nav className="admin-nav">
-      <div className="admin-nav-link ">Fraud Cases</div>
-      <div className="admin-nav-link">Transaction History</div>
+      <div className="admin-nav-link " onClick={onFraudClick}>Fraud Cases</div>
+      <div 
+        className="admin-nav-link" 
+        onClick={onTransactionHistoryClick}
+        style={{ cursor: 'pointer' }}
+      >
+        Transaction History
+      </div>
     </nav>
     <div className="flagged-section">
       <div className="flagged-header">Flagged Users</div>
@@ -52,23 +59,25 @@ const Sidebar = ({ flaggedUsers, flaggedSearch, setFlaggedSearch }) => (
       <ul className="flagged-list">
         {flaggedUsers.length === 0 && <li className="flagged-empty">No flagged users</li>}
         {flaggedUsers.map(user => (
-          <li key={user.id} className="flagged-item">{user.name}</li>
+          <li key={user._id || user.id} className="flagged-item">{user.name || user.username}</li>
         ))}
       </ul>
     </div>
   </aside>
 );
 
-const ConfirmDialog = ({ open, onClose, onConfirm, user }) => {
+const ConfirmDialog = ({ open, onClose, onConfirm, user, isBlocking }) => {
   if (!open) return null;
   return (
     <div className="admin-dialog-overlay">
       <div className="admin-dialog">
-        <h4>Block User</h4>
-        <p>Are you sure you want to block <b>{user?.name}</b>?</p>
+        <h4>{isBlocking ? 'Block User' : 'Unblock User'}</h4>
+        <p>Are you sure you want to {isBlocking ? 'block' : 'unblock'} <b>{user?.name || user?.username}</b>?</p>
         <div className="admin-dialog-actions">
           <button className="admin-dialog-btn cancel" onClick={onClose}>Cancel</button>
-          <button className="admin-dialog-btn confirm" onClick={onConfirm}>Yes, Block</button>
+          <button className="admin-dialog-btn confirm" onClick={onConfirm}>
+            Yes, {isBlocking ? 'Block' : 'Unblock'}
+          </button>
         </div>
       </div>
     </div>
@@ -76,36 +85,67 @@ const ConfirmDialog = ({ open, onClose, onConfirm, user }) => {
 };
 
 const Admin = () => {
-  // Mock data
   const navigate = useNavigate();
-  const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', accountBalance: 1500, email: 'john@example.com', status: 'Active' },
-    { id: 2, name: 'Jane Smith', accountBalance: 2300, email: 'jane@example.com', status: 'Active' },
-    { id: 3, name: 'Mike Johnson', accountBalance: 800, email: 'mike@example.com', status: 'Inactive' },
-    { id: 4, name: 'Sarah Williams', accountBalance: 3200, email: 'sarah@example.com', status: 'Active' },
-    { id: 5, name: 'David Brown', accountBalance: 1850, email: 'david@example.com', status: 'Flagged' },
-    { id: 6, name: 'Nitanshi Goyal', accountBalance: 1050, email: 'nitanshi@example.com', status: 'Flagged' },
-    { id: 7, name: 'Mallika Sehravath', accountBalance: 2350, email: 'mallika@example.com', status: 'Flagged' },
-    { id: 8, name: 'Debajyoti Maji', accountBalance: 175, email: 'dev@example.com', status: 'Flagged' },
-    { id: 9, name: 'Paspula Nikhil', accountBalance: 5000, email: 'nikhil@example.com', status: 'Flagged' },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [userSearch, setUserSearch] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const [flaggedSearch, setFlaggedSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [isBlocking, setIsBlocking] = useState(true);
 
-  const flaggedUsers = users.filter(u => u.status === 'Flagged' && u.name.toLowerCase().includes(flaggedSearch.toLowerCase()));
+  // Fetch users from backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/admin/users');
+        console.log('Fetched users:', response.data);
+        setUsers(response.data.data.users || response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        setError('Failed to fetch users. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Filter flagged users - adjust the property name based on your backend response
+  const flaggedUsers = users.filter(u => {
+    const userStatus = u.status || u.blocked || u.isFlagged;
+    const userName = u.name || u.username || '';
+    return (userStatus === 'blocked' || userStatus === true || u.isFlagged) && 
+           userName.toLowerCase().includes(flaggedSearch.toLowerCase());
+  });
 
   const filteredUsers = users
-    .filter(user =>
-      user.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-      user.email.toLowerCase().includes(userSearch.toLowerCase())
-    )
+    .filter(user => {
+      const userName = (user.name || user.username || '').toLowerCase();
+      const userEmail = (user.email || '').toLowerCase();
+      const searchTerm = userSearch.toLowerCase();
+      return userName.includes(searchTerm) || userEmail.includes(searchTerm);
+    })
     .sort((a, b) => {
-      const aValue = a[sortBy];
-      const bValue = b[sortBy];
+      let aValue, bValue;
+      
+      if (sortBy === 'name') {
+        aValue = a.name || a.username || '';
+        bValue = b.name || b.username || '';
+      } else if (sortBy === 'accountBalance') {
+        aValue = a.accountBalance || a.balance || 0;
+        bValue = b.accountBalance || b.balance || 0;
+      } else {
+        aValue = a[sortBy] || '';
+        bValue = b[sortBy] || '';
+      }
+      
       if (sortOrder === 'asc') {
         return aValue > bValue ? 1 : -1;
       }
@@ -121,26 +161,126 @@ const Admin = () => {
     }
   };
 
-  const handleBlock = (user) => {
+  const handleBlockToggle = (user) => {
     setSelectedUser(user);
+    // Determine if we're blocking or unblocking based on current status
+    const currentlyBlocked = user.blocked || user.status === 'Blocked';
+    setIsBlocking(!currentlyBlocked);
     setDialogOpen(true);
   };
 
-  const handleConfirmBlock = () => {
-    setUsers(users.filter(u => u.id !== selectedUser.id));
-    setDialogOpen(false);
-    setSelectedUser(null);
+  const handleConfirmBlock = async () => {
+    try {
+      const userId = selectedUser._id || selectedUser.id;
+      await api.post(`admin/toggle-block-user/${userId}`);
+      
+      // Update the user's status in the local state
+      setUsers(prevUsers => 
+        prevUsers.map(user => {
+          if ((user._id || user.id) === userId) {
+            return {
+              ...user,
+              blocked: !user.blocked,
+              status: user.blocked ? 'Active' : 'Blocked'
+            };
+          }
+          return user;
+        })
+      );
+      
+      setDialogOpen(false);
+      setSelectedUser(null);
+    } catch (err) {
+      console.error('Error toggling user block status:', err);
+      setError('Failed to update user status. Please try again.');
+      setDialogOpen(false);
+    }
   };
+
+  const handleTransactionHistory = async () => {
+    try {
+      navigate('/admin/transactions');
+      // You can navigate to a transaction history page or show in a modal
+      // navigate('/admin/transactions');
+    } catch (err) {
+      console.error('Error fetching transactions:', err);
+      setError('Failed to fetch transaction history.');
+    }
+  };
+  const handleFraudClick = async () => {
+    try {
+      navigate('/fraud');
+      // You can navigate to a transaction history page or show in a modal
+      // navigate('/admin/transactions');
+    } catch (err) {
+      console.error('Error fetching transactions:', err);
+      setError('Failed to fetch transaction history.');
+    }
+  };
+
+  const getUserStatus = (user) => {
+    if (user.blocked) return 'Blocked';
+    if (user.blocked) return 'Flagged';
+    if (user.status) return user.status;
+    return 'Active';
+  };
+
+  const getUserBalance = (user) => {
+    return user.accountBalance || user.balance || 0;
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="admin-layout">
+          <div className="admin-main">
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              Loading users...
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Navbar />
+        <div className="admin-layout">
+          <div className="admin-main">
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+              Error: {error}
+              <br />
+              <button 
+                onClick={() => window.location.reload()} 
+                style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
     <Navbar />
     <div className="admin-layout">
-      <Sidebar flaggedUsers={flaggedUsers} flaggedSearch={flaggedSearch} setFlaggedSearch={setFlaggedSearch} />
+      <Sidebar 
+        flaggedUsers={flaggedUsers} 
+        flaggedSearch={flaggedSearch} 
+        setFlaggedSearch={setFlaggedSearch}
+        onTransactionHistoryClick={handleTransactionHistory}
+        onFraudClick={handleFraudClick}
+      />
       <main className="admin-main-scrollable">
         <div className="admin-main">
           <div className="admin-users-header">
-            <h2>All Users</h2>
+            <h2>All Users ({users.length})</h2>
             <div className="admin-users-controls">
               <div className="admin-search-box">
                 <input
@@ -163,22 +303,34 @@ const Admin = () => {
           </div>
           <div className="admin-users-list">
             {filteredUsers.map(user => (
-              <div key={user.id} className="admin-user-card">
+              <div key={user._id || user.id} className="admin-user-card">
                 <div className="admin-user-info">
                   <div className="admin-user-main-info">
-                    <h3>{user.name}</h3>
-                    <span className={`admin-user-status ${user.status.toLowerCase()}`}>{user.status}</span>
+                    <h3>{user.name || user.username}</h3>
+                    <span className={`admin-user-status ${getUserStatus(user).toLowerCase()}`}>
+                      {getUserStatus(user)}
+                    </span>
                   </div>
                   <p className="admin-user-email">{user.email}</p>
-                  <p className="admin-user-accountBalance">Balance: ${user.accountBalance.toLocaleString()}</p>
+                  <p className="admin-user-accountBalance">
+                    Balance: ${getUserBalance(user).toLocaleString()}
+                  </p>
                 </div>
                 <div className="admin-user-actions">
-                  <button className="admin-action-btn block" onClick={() => handleBlock(user)}>
-                    Block
+                  <button 
+                    className={`admin-action-btn ${user.blocked ? 'unblock' : 'block'}`} 
+                    onClick={() => handleBlockToggle(user)}
+                  >
+                    {user.blocked ? 'Unblock' : 'Block'}
                   </button>
                 </div>
               </div>
             ))}
+            {filteredUsers.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                No users found matching your search criteria.
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -187,9 +339,15 @@ const Admin = () => {
           <span className="floating-bot-text">Ask Buddy</span>
      </button>
     </div>
-    <ConfirmDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onConfirm={handleConfirmBlock} user={selectedUser} />
+    <ConfirmDialog 
+      open={dialogOpen} 
+      onClose={() => setDialogOpen(false)} 
+      onConfirm={handleConfirmBlock} 
+      user={selectedUser}
+      isBlocking={isBlocking}
+    />
     </>
   );
 };
 
-export default Admin; 
+export default Admin;
