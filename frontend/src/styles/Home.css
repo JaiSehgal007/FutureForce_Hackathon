@@ -1,0 +1,126 @@
+.home-outer {
+  background: white;
+  min-height: 100vh;
+}
+
+.home-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr 300px;
+  gap: 20px;
+  padding: 90px 20px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.home-sidebar {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.push-up {
+  margin-top: -20px;
+}
+
+.home-makepay {
+  margin-bottom: 20px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.home-contacts {
+  margin: 20px 0;
+}
+
+.contacts-heading {
+  margin-bottom: 10px;
+  color: #1a237e;
+}
+
+.contacts-list {
+  list-style: none;
+  padding: 0;
+}
+
+.contact-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.contact-item:hover {
+  background: #f5f5f5;
+}
+
+.see-more-text {
+  color: #1a237e;
+  cursor: pointer;
+  display: block;
+  margin-top: 10px;
+}
+
+.home-profile-chat {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.home-main {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.home-quickpay {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.stat-dialog {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.home-rightbar {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.home-transactions {
+  margin-bottom: 30px;
+}
+
+.home-transactions h4 {
+  margin-bottom: 15px;
+  color: #1a237e;
+}
+
+.home-transactions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.trans-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.trans-date {
+  color: #666;
+  font-size: 0.9rem;
+} 
