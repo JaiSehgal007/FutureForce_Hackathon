@@ -40,7 +40,7 @@ export const getStatsByRegion = asyncHandler(async (req, res) => {
 
     for (const txn of transactions) {
         const sender = txn.senderAccountNumber;
-        if (txn.fraudPercentage > 0.8) {
+        if (txn.fraudPercentage > 0.4) {
             suspiciousMap.set(sender, (suspiciousMap.get(sender) || 0) + 1);
         }
     }
@@ -126,7 +126,7 @@ export const getStatsByUser = asyncHandler(async (req, res) => {
 });
 
 export const getAllUsers = asyncHandler(async (req, res) => {
-    const users = await User.find().select("-password -refreshToken");
+    const users = await User.find({role : "user"}).select("-password -refreshToken");
     if (!users || users.length === 0) {
         throw new ApiError(404, "No users found");
     }

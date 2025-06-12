@@ -79,15 +79,15 @@ const Admin = () => {
   // Mock data
   const navigate = useNavigate();
   const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', balance: 1500, email: 'john@example.com', status: 'Active' },
-    { id: 2, name: 'Jane Smith', balance: 2300, email: 'jane@example.com', status: 'Active' },
-    { id: 3, name: 'Mike Johnson', balance: 800, email: 'mike@example.com', status: 'Inactive' },
-    { id: 4, name: 'Sarah Williams', balance: 3200, email: 'sarah@example.com', status: 'Active' },
-    { id: 5, name: 'David Brown', balance: 1850, email: 'david@example.com', status: 'Flagged' },
-    { id: 6, name: 'Nitanshi Goyal', balance: 1050, email: 'nitanshi@example.com', status: 'Flagged' },
-    { id: 7, name: 'Mallika Sehravath', balance: 2350, email: 'mallika@example.com', status: 'Flagged' },
-    { id: 8, name: 'Debajyoti Maji', balance: 175, email: 'dev@example.com', status: 'Flagged' },
-    { id: 9, name: 'Paspula Nikhil', balance: 5000, email: 'nikhil@example.com', status: 'Flagged' },
+    { id: 1, name: 'John Doe', accountBalance: 1500, email: 'john@example.com', status: 'Active' },
+    { id: 2, name: 'Jane Smith', accountBalance: 2300, email: 'jane@example.com', status: 'Active' },
+    { id: 3, name: 'Mike Johnson', accountBalance: 800, email: 'mike@example.com', status: 'Inactive' },
+    { id: 4, name: 'Sarah Williams', accountBalance: 3200, email: 'sarah@example.com', status: 'Active' },
+    { id: 5, name: 'David Brown', accountBalance: 1850, email: 'david@example.com', status: 'Flagged' },
+    { id: 6, name: 'Nitanshi Goyal', accountBalance: 1050, email: 'nitanshi@example.com', status: 'Flagged' },
+    { id: 7, name: 'Mallika Sehravath', accountBalance: 2350, email: 'mallika@example.com', status: 'Flagged' },
+    { id: 8, name: 'Debajyoti Maji', accountBalance: 175, email: 'dev@example.com', status: 'Flagged' },
+    { id: 9, name: 'Paspula Nikhil', accountBalance: 5000, email: 'nikhil@example.com', status: 'Flagged' },
   ]);
   const [userSearch, setUserSearch] = useState('');
   const [sortBy, setSortBy] = useState('name');
@@ -155,8 +155,8 @@ const Admin = () => {
                 <button className={`admin-sort-btn ${sortBy === 'name' ? 'active' : ''}`} onClick={() => handleSort('name')}>
                   Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </button>
-                <button className={`admin-sort-btn ${sortBy === 'balance' ? 'active' : ''}`} onClick={() => handleSort('balance')}>
-                  Balance {sortBy === 'balance' && (sortOrder === 'asc' ? '↑' : '↓')}
+                <button className={`admin-sort-btn ${sortBy === 'accountBalance' ? 'active' : ''}`} onClick={() => handleSort('accountBalance')}>
+                  Balance {sortBy === 'accountBalance' && (sortOrder === 'asc' ? '↑' : '↓')}
                 </button>
               </div>
             </div>
@@ -170,7 +170,7 @@ const Admin = () => {
                     <span className={`admin-user-status ${user.status.toLowerCase()}`}>{user.status}</span>
                   </div>
                   <p className="admin-user-email">{user.email}</p>
-                  <p className="admin-user-balance">Balance: ${user.balance.toLocaleString()}</p>
+                  <p className="admin-user-accountBalance">Balance: ${user.accountBalance.toLocaleString()}</p>
                 </div>
                 <div className="admin-user-actions">
                   <button className="admin-action-btn block" onClick={() => handleBlock(user)}>

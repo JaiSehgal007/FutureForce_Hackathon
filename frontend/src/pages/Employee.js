@@ -60,7 +60,7 @@ const AddMoneyDialog = ({ open, onClose, user, onConfirm }) => {
     
     try {
       const response = await api.post('/employee/add-money', {
-        userId: user._id || user.id,
+        AccountNumber: user.accountNumber,
         amount: Number(amount),
         password: password
       });
@@ -100,7 +100,7 @@ const AddMoneyDialog = ({ open, onClose, user, onConfirm }) => {
             <div className="employee-dialog-confirmed-summary">
               <div><b>User:</b> {user.name || user.fullName}</div>
               <div><b>Amount Added:</b> ₹{amount}</div>
-              <div><b>New Balance:</b> ₹{(user.balance + Number(amount)).toLocaleString()}</div>
+              <div><b>New Balance:</b> ₹{(user.accountBalance + Number(amount)).toLocaleString()}</div>
             </div>
             <div className="employee-dialog-confirmed-message">
               The payment has been successfully added to <b>{user.name || user.fullName}</b>'s account.
@@ -154,9 +154,9 @@ const AddMoneyDialog = ({ open, onClose, user, onConfirm }) => {
               <>
                 <div className="employee-dialog-summary">
                   <div><b>User:</b> {user.name || user.fullName}</div>
-                  <div><b>Current Balance:</b> ₹{user.balance.toLocaleString()}</div>
+                  <div><b>Current Balance:</b> ₹{user.accountBalance.toLocaleString()}</div>
                   <div><b>Amount to Add:</b> ₹{Number(amount).toLocaleString()}</div>
-                  <div><b>New Balance:</b> ₹{(user.balance + Number(amount)).toLocaleString()}</div>
+                  <div><b>New Balance:</b> ₹{(user.accountBalance + Number(amount)).toLocaleString()}</div>
                 </div>
                 <div className="employee-dialog-actions">
                   <button className="employee-dialog-btn cancel" onClick={handleClose} disabled={loading}>Cancel</button>
@@ -190,7 +190,8 @@ const Employee = () => {
   const fetchUsers = async () => {
     try {
       const response = await api.get('/admin/users');
-      setUsers(response.data.data || []);
+      console.log(response)
+      setUsers(response.data.data.users || []);
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch users';
       setError(errorMessage);
@@ -230,10 +231,10 @@ const Employee = () => {
   };
 
   const handleConfirmAddMoney = async (amount, updatedData) => {
-    // Update the user's balance in the local state
+    // Update the user's accountBalance in the local state
     setUsers(users.map(u =>
       (u._id || u.id) === (selectedUser._id || selectedUser.id) 
-        ? { ...u, balance: u.balance + amount } 
+        ? { ...u, accountBalance: u.accountBalance + amount } 
         : u
     ));
     
@@ -352,10 +353,10 @@ const Employee = () => {
                     Name {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
                   </button>
                   <button 
-                    className={`sort-btn ${sortBy === 'balance' ? 'active' : ''}`}
-                    onClick={() => handleSort('balance')}
+                    className={`sort-btn ${sortBy === 'accountBalance' ? 'active' : ''}`}
+                    onClick={() => handleSort('accountBalance')}
                   >
-                    Balance {sortBy === 'balance' && (sortOrder === 'asc' ? '↑' : '↓')}
+                    Balance {sortBy === 'accountBalance' && (sortOrder === 'asc' ? '↑' : '↓')}
                   </button>
                 </div>
               </div>
@@ -373,12 +374,12 @@ const Employee = () => {
                       <div className="user-main-info">
                         <h3>{user.name || user.fullName}</h3>
                         <span className={`user-status ${(user.status || 'active').toLowerCase()}`}>
-                          {user.status || 'Active'}
+                          {user.blocked ? 'Blocked' : 'Active'}
                         </span>
                       </div>
                       <p className="user-email">{user.email}</p>
-                      <p className="user-balance">
-                        Balance: ₹{(user.balance || 0).toLocaleString()}
+                      <p className="user-accountBalance">
+                        Balance: ₹{(user.accountBalance || 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="user-actions">
