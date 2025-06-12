@@ -726,3 +726,94 @@
   flex-direction: column;
   gap: 4px;
 }
+
+/* Fraud Page Styles */
+.fraud-container {
+  padding: 20px;
+  margin-top: 100px;
+  padding-top: 100px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+.fraud-container h2 {
+  color: #0176D3;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.stat-card h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+.stat-card p {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #0176D3;
+  margin: 0;
+}
+
+.stat-card ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.stat-card li {
+  background-color: #e9f5ff;
+  margin-bottom: 5px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.error-message {
+  color: #dc3545;
+  text-align: center;
+  font-weight: bold;
+}
+
+.region-selector {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.region-selector label {
+  margin-right: 10px;
+  font-weight: bold;
+  color: #333;
+}
+
+.region-selector select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  outline: none;
+}
+
+.region-selector select:focus {
+  border-color: #0176D3;
+  box-shadow: 0 0 0 2px rgba(1, 118, 211, 0.2);
+}

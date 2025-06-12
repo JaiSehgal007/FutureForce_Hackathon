@@ -6,6 +6,7 @@ import ChatbotPage from '../pages/ChatbotPage';
 import Employee from '../pages/Employee';
 import Admin from '../pages/Admin';
 import Profile from '../pages/Profile';
+import Fraud from '../pages/fraud';
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
   {
     path: '/profile',
     element: <Profile />
+  },
+  {
+    path: '/fraud',
+    element: <Fraud />
   }
 ]);
 

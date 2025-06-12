@@ -6,7 +6,7 @@ import { Transaction } from "../models/transaction.models.js";
 import mongoose from "mongoose";
 
 export const getStatsByRegion = asyncHandler(async (req, res) => {
-    const { region } = req.body;
+    const { region } = req.query;
 
     if (!region) {
         throw new ApiError(400, "Region query parameter is required");
