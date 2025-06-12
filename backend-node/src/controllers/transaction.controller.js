@@ -93,7 +93,7 @@ export const createTransaction = asyncHandler(async (req, res) => {
         AgeGroup: getAgeGroup(senderAccount.age),
         Days_Since_Last_Transaction: daysSinceLastTxn,
         location : location,
-        previousTransaction : previousTransaction,
+        previousTransactions : previousTransaction,
         // XGBoost model inputs
         amount : Number(amount),
         oldBalanceOrig : Number(oldBalanceOrig),
@@ -108,7 +108,8 @@ export const createTransaction = asyncHandler(async (req, res) => {
     let fraudPercentage = 0;
     try {
         const { data } = await axios.post(`${process.env.PYTHON_API_URL}/predict`, inputToML);
-        fraudPercentage = data.risk_score ? data.risk_score : 0;
+        console.log("ML backend response:", data);
+        fraudPercentage = data.fraud_percentage ? data.fraud_percentage : 0;
     } catch (error) {
         console.error("ML backend error:", error?.response?.data || error.message);
         fraudPercentage = 0;

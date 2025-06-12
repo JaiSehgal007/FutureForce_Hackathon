@@ -136,3 +136,28 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     }
     res.status(200).json(new ApiResponse(200, { user }, "User found"));
 })
+
+
+export const addSavedContact = asyncHandler(async (req , res) => {
+    const { contactName, contactNumber } = req.body;
+    if (!contactName || !contactNumber) {
+        throw new ApiError(400, "Contact name and number are required");
+    }
+
+    const user = await User.findOne({contact : contactNumber});
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Check if contact already exists
+    const existingContact = user.savedContacts.find(contact => contact.contact === contactNumber);
+    if (existingContact) {
+        throw new ApiError(400, "Contact already exists");
+    }
+
+    // Add new contact
+    user.savedContacts.push({ name : contactName,contact : contactNumber });
+    await user.save();
+    
+    res.status(201).json(new ApiResponse(201, { savedContacts: user.savedContacts }, "Contact added successfully"));
+})
