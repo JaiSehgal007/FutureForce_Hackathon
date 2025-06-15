@@ -10,11 +10,11 @@ import {
 } from "../controllers/admin.controller.js";
 
 const router = Router();
-router.get("/stats/region", verifyJWT, getStatsByRegion);
-router.get("/stats/user/:id", verifyJWT, getStatsByUser);
-router.get("/users", verifyJWT, getAllUsers);
-router.get("/transactions", verifyJWT, getAllTransactions);
-router.post("/register-employee", verifyJWT, registerEmployee);
-router.post("/toggle-block-user/:id", verifyJWT, ToggleBlockUser);
+router.get("/stats/region", getStatsByRegion);
+router.get("/stats/user/:id", getStatsByUser);
+router.post("/register-employee", registerEmployee);
+router.get("/users", getAllUsers);
+router.get("/transactions", getAllTransactions);
+router.post("/toggle-block-user/:id", ToggleBlockUser);
 
 export default router;
