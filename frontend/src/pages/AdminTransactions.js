@@ -193,7 +193,7 @@ const TransactionCard = ({ transaction }) => {
         <div className="transaction-details">
           <div className="transaction-amount">
             <span className={`amount ${transaction.type.toLowerCase()}`}>
-              {transaction.type === 'Credit' ? '+' : '-'}${transaction.amount.toLocaleString()}
+              {transaction.type === 'Credit' ? '+' : '-'}₹ {transaction.amount.toLocaleString()}
             </span>
             <span className="transaction-type">{transaction.type}</span>
           </div>
@@ -372,7 +372,7 @@ const AdminTransactions = () => {
                   <div className="stat-label">Suspicious</div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-value">${totalAmount.toLocaleString()}</div>
+                  <div className="stat-value">₹ {totalAmount.toLocaleString()}</div>
                   <div className="stat-label">Total Amount</div>
                 </div>
               </div>
